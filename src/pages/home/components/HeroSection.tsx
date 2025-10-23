@@ -13,13 +13,7 @@ export default function HeroSection() {
     <section className="relative min-h-screen flex items-center bg-gradient-to-br from-gray-50 to-white overflow-hidden">
       {/* Background Image */}
       <div 
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-        style={{
-          backgroundImage: `url('https://static.readdy.ai/image/60d079db6e314477a5615b4d3efd8435/9fdb43adc8ec0b0607e262dd1b8b39b9.jpeg')`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundRepeat: 'no-repeat'
-        }}
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat md:bg-[url('https://static.readdy.ai/image/60d079db6e314477a5615b4d3efd8435/9fdb43adc8ec0b0607e262dd1b8b39b9.jpeg')] bg-[url('https://i.imgur.com/placeholder-mobile.jpg')]"
       >
         <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/40 to-transparent"></div>
       </div>
