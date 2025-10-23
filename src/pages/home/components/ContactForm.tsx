@@ -71,19 +71,74 @@ export default function ContactForm() {
         return;
       }
 
-      // Em produção, enviar para o webhook real
-      const response = await fetch('https://webhooks.manager01.m4track.com.br/webhook/site-vox-tatuape', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
-        mode: 'cors',
-        body: JSON.stringify(dataToSend)
-      });
+      // Tentar múltiplos formatos para garantir compatibilidade
+      let response;
+      let success = false;
 
-      // Verificar se a resposta foi bem-sucedida
-      if (response.ok || response.status === 200 || response.status === 201) {
+      // Tentativa 1: FormData (formato mais comum para webhooks)
+      try {
+        const formDataToSend = new FormData();
+        Object.entries(dataToSend).forEach(([key, value]) => {
+          formDataToSend.append(key, value);
+        });
+
+        response = await fetch('https://webhooks.manager01.m4track.com.br/webhook/site-vox-tatuape', {
+          method: 'POST',
+          body: formDataToSend
+        });
+
+        if (response.ok || response.status === 200 || response.status === 201) {
+          success = true;
+        }
+      } catch (error) {
+        console.log('Tentativa 1 (FormData) falhou:', error);
+      }
+
+      // Tentativa 2: JSON (se FormData falhar)
+      if (!success) {
+        try {
+          response = await fetch('https://webhooks.manager01.m4track.com.br/webhook/site-vox-tatuape', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json'
+            },
+            body: JSON.stringify(dataToSend)
+          });
+
+          if (response.ok || response.status === 200 || response.status === 201) {
+            success = true;
+          }
+        } catch (error) {
+          console.log('Tentativa 2 (JSON) falhou:', error);
+        }
+      }
+
+      // Tentativa 3: URL encoded (último recurso)
+      if (!success) {
+        try {
+          const urlEncodedData = new URLSearchParams();
+          Object.entries(dataToSend).forEach(([key, value]) => {
+            urlEncodedData.append(key, value);
+          });
+
+          response = await fetch('https://webhooks.manager01.m4track.com.br/webhook/site-vox-tatuape', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: urlEncodedData
+          });
+
+          if (response.ok || response.status === 200 || response.status === 201) {
+            success = true;
+          }
+        } catch (error) {
+          console.log('Tentativa 3 (URL encoded) falhou:', error);
+        }
+      }
+
+      if (success) {
         setSubmitStatus('success');
         setFormData({
           name: '',
@@ -95,7 +150,7 @@ export default function ContactForm() {
           message: ''
         });
       } else {
-        console.error('Erro na resposta:', response.status, response.statusText);
+        console.error('Todas as tentativas falharam. Status da última resposta:', response?.status, response?.statusText);
         setSubmitStatus('error');
       }
     } catch (error) {
